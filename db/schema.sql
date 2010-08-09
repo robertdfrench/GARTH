@@ -7,7 +7,7 @@ create table organisms (
 	id int primary key auto_increment,
 	parent_id int,
 	fitness double,
-	genome binary(1024)
+	genome binary(255)
 );
 create table breeders (
 	id int primary key auto_increment,
