@@ -3,18 +3,24 @@
 // Class: DbConnector
 // Purpose: Connect to a database, MySQL version
 ///////////////////////////////////////////////////////////////////////////////////////
-require_once 'SystemComponent.php';
 
-class DbConnector extends SystemComponent {
+class DbConnector {
 
+  var $settings;
   var $theQuery;
   var $link;
 
+  // System variables
+  $settings['siteDir'] = './';
+
+  // Database variables
+  $settings['dbhost'] = 'localhost';
+  $settings['dbusername'] = 'root';
+  $settings['dbpassword'] = 'root';
+  $settings['dbname'] = 'garth';
+
   //*** Function: DbConnector, Purpose: Connect to the database ***
   function DbConnector(){
-
-    // Load settings from parent class
-    $settings = SystemComponent::getSettings();
 
     // Get the main settings from the array we just loaded
     $host = $settings['dbhost'];
