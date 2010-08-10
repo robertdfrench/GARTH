@@ -6,27 +6,16 @@
 
 class DbConnector {
 
-  var $settings;
+  var $host = 'localhost';
+  var $user = 'root';
+  var $pass = 'root';
+  var $db = 'garth';
+
   var $theQuery;
   var $link;
 
-  // System variables
-  $settings['siteDir'] = './';
-
-  // Database variables
-  $settings['dbhost'] = 'localhost';
-  $settings['dbusername'] = 'root';
-  $settings['dbpassword'] = 'root';
-  $settings['dbname'] = 'garth';
-
   //*** Function: DbConnector, Purpose: Connect to the database ***
   function DbConnector(){
-
-    // Get the main settings from the array we just loaded
-    $host = $settings['dbhost'];
-    $db = $settings['dbname'];
-    $user = $settings['dbusername'];
-    $pass = $settings['dbpassword'];
 
     // Connect to the database
     $this->link = mysql_connect($host, $user, $pass);
