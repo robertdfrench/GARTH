@@ -8,6 +8,22 @@
  *
  */
 
-body {
-
+#body {
+  background-color: #ffffff;
+  border-style: solid;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 100px;
+  margin-bottom: auto;
+  width: 800px;
+  height: auto;
 }
+
+a {
+  color: #990000;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #FF000F;
+}  
