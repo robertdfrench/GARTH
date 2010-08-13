@@ -8,7 +8,7 @@ class DbConnector {
 
   var $host = 'localhost';
   var $user = 'root';
-  var $pass = 'root';
+  var $pass = '';
   var $db = 'garth';
 
   var $theQuery;
