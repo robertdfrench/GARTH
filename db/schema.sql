@@ -38,6 +38,7 @@ create table plugin_params (
 );
 create table processes (
 	id int primary key auto_increment,
+	experiment_id int not null,
 	system_pid int not null,
 	process_type enum('breeder','judge','zookeeper') not null,
 	timestamp_for_start_of_execution timestamp,
