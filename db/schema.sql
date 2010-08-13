@@ -1,3 +1,5 @@
+create database garth;
+use garth;
 create table users (
 	id int primary key auto_increment,
 	user_name char(32) not null
@@ -33,4 +35,11 @@ create table plugin_params (
 	parameter_type enum('string','number') not null,
 	plugin_id int not null,
 	plugin_type enum('breeder','judge') not null
+);
+create table processes (
+	id int primary key auto_increment,
+	system_pid int not null,
+	process_type enum('breeder','judge','zookeeper') not null,
+	timestamp_for_start_of_execution timestamp,
+	percent_complete float(4,2)
 );
