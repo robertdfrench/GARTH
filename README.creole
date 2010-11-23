@@ -1,0 +1,32 @@
+==DistributedGA==
+====A Prototype for the GARTH Genetic AlgoRiTHm package====
+
+Depends on mysql-connector-java-5.0.8-bin.jar. Also, you'll
+have to build it with Eclipse or write your own build
+scripts, because I couldn't figure out how to make Helios
+export an AntScript
+
+Fire up mysql, create a database, set the db name, user, and
+pass in KSDistGAConfig.java (yeah, I know. You wanna fix it
+for me?) and then run KSDistGABootloader. This will prep all
+the tables (all one of them ;-) and then exit.
+
+Now start the tools/distributed_ga_monitor.pl script (but 
+first you'll have to re-enter the db name/user/pass in there
+as well. It's the 2nd or 3rd line that calls DBI->connect())
+and it will start reporting on some basic statistics, such
+as how many new organisms have been created (right now, 0)
+and what the min/max/avg fitness score is.
+
+Now fire up a couple of KSDistGAWorker processes (1 per cpu
+is about the tops in my testing, because remember you'll
+have a LOT of MySQL overhead) and watch it roll!
+
+Also, you will probably want to have written your own
+fitness function in KSFitnessFunction.evaluate or it will
+just use my crappy example one. Remember, All the genes
+are doubles on [0,1], so it is YOUR JOB to map these values
+to an appropriate alphabet for each gene before computing 
+your fitness function. I am forcing this restriction in
+order to keep the mutation statistics easy, also it's not
+that much of a pain in your ass, so stop bitching...

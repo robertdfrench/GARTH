@@ -1,0 +1,152 @@
+package com.korovasoft.ga.distributed;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+
+//TODO: IF a SQL Exception is thrown after lockTable() is called,
+// 		then we need to call unlockTable() in the handler before
+//		returning control.
+/**
+ * @author robertdfrench
+ * Acts as a wrapper around our underlying data store
+ * TODO: Make a KSDistGADatasourceInterface so that we can
+ * more easily swap out other RDBMS's or even something
+ * more resilient like CouchDB, or maybe something quicker
+ * like a shared data structure.
+ */
+public class KSDistGADatasource {
+	private Connection dbh;
+	private Statement lock_handle;
+	private Statement work_handle;
+	private KSDistGAConfig conf;
+	private final static String GENE_POOL_TABLE = "gene_pool";
+	private final static String STATISTICS_TABLE = "stats";
+	private final static String WORKER_STATUS_TABLE = "workers";
+
+	/**
+	 * Stores the config object and creates a new database handle
+	 * based on the database settings in config
+	 * @param conf
+	 * @throws ClassNotFoundException
+	 * @throws SQLException
+	 */
+	public KSDistGADatasource(KSDistGAConfig conf) throws SQLException {
+		this.conf = conf;
+		try {
+			Class.forName(KSMySQLStrings.getDriverClassName());
+		} catch (ClassNotFoundException e) {
+			System.err.println("Could not load MySQL driver. Are you sure that mysql-connector-java-5.0.5-bin.jar or greater is installed?");
+		}
+		this.dbh = DriverManager.getConnection(KSMySQLStrings.getConnectionString(conf),conf.databaseUser, conf.databasePassword);
+		this.lock_handle = dbh.createStatement();
+		this.work_handle = dbh.createStatement();
+	}
+	
+	/**
+	 * Gets the poorest fitness score from the current population
+	 * @return
+	 * @throws SQLException
+	 */
+	public double getPoorestFitness() throws SQLException {
+		double poorestScore = Double.POSITIVE_INFINITY;
+		
+		work_handle.execute(KSMySQLStrings.getLatestStatisticsStatement(conf, STATISTICS_TABLE));
+		ResultSet rs = work_handle.getResultSet();
+		if (rs.next()) {
+			poorestScore = rs.getDouble("max_fitness");
+		}
+		
+		return poorestScore;
+	}
+	
+	/**
+	 * updates the statistics table
+	 * @throws SQLException 
+	 */
+	public void calculateAndLogStatistics() throws SQLException {
+		work_handle.executeUpdate(KSMySQLStrings.getStatisticsUpdateStatement(conf, STATISTICS_TABLE, GENE_POOL_TABLE, WORKER_STATUS_TABLE));
+	}
+	
+	
+	/**
+	 * Creates gene_pool table, statistics table, and worker registration table
+	 * @throws SQLException
+	 */
+	public void setupTables() throws SQLException {
+		ArrayList<String> workload = new ArrayList<String>();
+		workload.add(KSMySQLStrings.getDropTableStatement(conf, GENE_POOL_TABLE));
+		workload.add(KSMySQLStrings.getDropTableStatement(conf, STATISTICS_TABLE));
+		workload.add(KSMySQLStrings.getDropTableStatement(conf, WORKER_STATUS_TABLE));
+		workload.add(KSMySQLStrings.getGenePoolCreateStatement(conf, GENE_POOL_TABLE));
+		workload.add(KSMySQLStrings.getStatisticsCreateStatement(conf, STATISTICS_TABLE));
+		workload.add(KSMySQLStrings.getWorkerStatusCreateStatement(conf, WORKER_STATUS_TABLE));
+		
+		Statement sth = dbh.createStatement();
+		for (String sql : workload) { // Nice collection iteration!
+			sth.executeUpdate(sql);
+		}
+	}
+	
+	
+	/**
+	 * Checks a pair of organisms out of the datasource
+	 * @return
+	 * @throws SQLException
+	 */
+	public KSOrganism[] checkoutOrganisms() throws SQLException {
+		// Do all the allocation & initialization up front
+		// so that we minimize the time spent with the gene
+		// pool locked.
+		KSOrganism[] pair = new KSOrganism[2];
+		pair[0] = new KSOrganism(conf.genomeLength);
+		pair[1] = new KSOrganism(conf.genomeLength);
+		Statement sth = dbh.createStatement();
+		String selectStatement = KSMySQLStrings.getSelectPairStatement(conf, GENE_POOL_TABLE);
+		String deleteStatement = KSMySQLStrings.getDeletePairStatement(conf, GENE_POOL_TABLE);
+		ResultSet rs = null;
+		int i = 0,j = 0;
+		
+		/*** TABLE IS LOCKED ***/
+		lockTable(GENE_POOL_TABLE);
+		sth.execute(selectStatement);
+		rs = sth.getResultSet();
+		while(rs.next()) {
+			while( i < conf.genomeLength ) {
+				pair[j].genome[i] = rs.getDouble(i + 1); // (i + 1) -> gene_i
+				i++;
+			}
+			pair[j].fitnessScore = rs.getDouble(i + 1);
+			j++; i = 0;
+		}
+		sth.executeUpdate(deleteStatement);
+		unlockAllTables();
+		/*** TABLES AIN'T LOCKED ***/
+		
+		
+		return pair;
+	}
+	
+	private void lockTable(String tableName) throws SQLException {
+		lock_handle.executeUpdate(KSMySQLStrings.getLockTableStatement(conf, tableName));
+	}
+	
+	private void unlockAllTables() throws SQLException {
+		lock_handle.executeUpdate(KSMySQLStrings.getUnlockTableStatement());
+	}
+	
+	public void putPair(KSOrganism[] pair) throws SQLException {
+		String insertStatements[] = new String[2];
+		for (int i = 0; i < 2; i++) {
+			insertStatements[i] = KSMySQLStrings.getInsertOrganismStatement(conf, GENE_POOL_TABLE, pair[i]);
+		}
+		lockTable(GENE_POOL_TABLE);
+		for (int i = 0; i < 2; i++) {
+			work_handle.executeUpdate(insertStatements[i].toString());
+		}
+		unlockAllTables();
+	}
+}
