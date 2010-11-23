@@ -1,3 +1,8 @@
+/**
+* COPYRIGHT 2010 Korovasoft.
+*
+* See LICENSE file for details.
+**/
 package com.korovasoft.ga.distributed;
 
 

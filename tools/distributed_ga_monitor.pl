@@ -1,4 +1,9 @@
 #!/usr/bin/perl
+##################
+# COPYRIGHT 2010 Korovasoft.
+#
+# See LICENSE file for details.
+##################
 use DBI;
 my $dbh = DBI->connect("DBI:mysql:distributed_ga","root","");
 my $query_string = "select 
