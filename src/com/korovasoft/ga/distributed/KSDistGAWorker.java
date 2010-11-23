@@ -69,14 +69,17 @@ public class KSDistGAWorker {
 		double poorestFitnessScore = genePool.getPoorestFitness();
 		KSOrganism.setFitnessNormalizer(poorestFitnessScore);
 		for (int i = 0; true; i++) {
-			KSOrganism[] pair = genePool.getPair();
-			ff.evaluate(pair[0]);
-			ff.evaluate(pair[1]);
-			int overwriteIndex = (pair[0].fitnessScore > pair[1].fitnessScore) ? 0 : 1; // pick the loser
-			int cloneIndex = 1 - overwriteIndex; // pick the winner
-			pair[overwriteIndex] = new KSOrganism(pair[cloneIndex]); // overwrite the loser with clone of winner
-			genePool.putPair(pair);
-			if (i == conf.numInsertsBeforeUpdatingFitnessNormalizer) {
+			KSOrganism[] checkoutArray = genePool.takeArray();
+			for (int j = 0; j < conf.checkoutSize; j++) {
+				ff.evaluate(checkoutArray[j]);
+			}
+			for (int j = 0; j < conf.checkoutSize / 2; j++) {
+				int overwriteIndex = (checkoutArray[2*j + 0].fitnessScore > checkoutArray[2*j + 1].fitnessScore) ? 0 : 1; // pick the loser
+				int cloneIndex = 1 - overwriteIndex; // pick the winner
+				checkoutArray[2*j + overwriteIndex] = new KSOrganism(checkoutArray[2*j + cloneIndex]); // overwrite the loser with clone of winner
+			}
+			genePool.putArray(checkoutArray);
+			if (i == conf.numInsertsBeforeCallingGC) {
 				i = 0;
 			//TODO: Test this renormalizing routine 	
 			//	KSOrganism.setFitnessNormalizer(poorestFitnessScore);

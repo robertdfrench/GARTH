@@ -67,8 +67,8 @@ public class KSMySQLStrings {
 	 * @param tableName
 	 * @return MySQL string for selecting first two organisms from the gene_pool
 	 */
-	public static String getSelectPairStatement(KSDistGAConfig conf, String tableName) {
-		return "SELECT * FROM " + conf.databaseTablePrefix + tableName + " ORDER BY id ASC LIMIT 2";
+	public static String getSelectArrayStatement(KSDistGAConfig conf, String tableName) {
+		return "SELECT * FROM " + conf.databaseTablePrefix + tableName + " ORDER BY id ASC LIMIT " + conf.checkoutSize;
 	}
 	
 	/**
@@ -79,8 +79,8 @@ public class KSMySQLStrings {
 	 * @param tableName
 	 * @return MySQL string for deleting first two organisms in the gene_pool
 	 */
-	public static String getDeletePairStatement(KSDistGAConfig conf, String tableName) {
-		return "DELETE FROM " + conf.databaseTablePrefix + tableName + " ORDER BY id ASC LIMIT 2";
+	public static String getDeleteArrayStatement(KSDistGAConfig conf, String tableName) {
+		return "DELETE FROM " + conf.databaseTablePrefix + tableName + " ORDER BY id ASC LIMIT " + conf.checkoutSize;
 	}
 	
 	/**

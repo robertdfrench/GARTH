@@ -59,9 +59,8 @@ public class KSDistGAConfig {
 	/**
 	 * Ignore this. The Statistics sampling is about to be reworked, so
 	 * it may become super important or it may get removed
-	 * @deprecated
 	 */
-	public int numInsertsBeforeUpdatingFitnessNormalizer;
+	public int numInsertsBeforeCallingGC;
 	
 	/**
 	 * How many milliseconds to sleep between sampling intervals
@@ -72,6 +71,12 @@ public class KSDistGAConfig {
 	 * Fitness function to be used in calculations
 	 */
 	public KSFitnessFunction fitnessFunction;
+	
+	/**
+	 * Number of organisms that will be checked out from the
+	 * repository at a time. Should properly divide populationSize
+	 */
+	public int checkoutSize;
 
 	/**
 	 * create a new KSDistGAConfig with the hard-coded values
@@ -86,10 +91,13 @@ public class KSDistGAConfig {
 		databaseTablePrefix = "ksdga_";
 		populationSize = 1000;
 		genomeLength = 100;
+		checkoutSize = 50;
 		numWorkers = 6;
-		numInsertsBeforeUpdatingFitnessNormalizer = 10000;
+		numInsertsBeforeCallingGC = 10000;
 		statisticsSamplerWaitPeriod = 2000;
 		fitnessFunction = new KSAdditiveFitnessFunction();
+		assert(populationSize % checkoutSize == 0);
+		assert(checkoutSize % 2 == 0);
 	}
 
 }

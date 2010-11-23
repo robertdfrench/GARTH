@@ -97,16 +97,17 @@ public class KSDistGADatasource {
 	 * @return
 	 * @throws SQLException
 	 */
-	public KSOrganism[] checkoutOrganisms() throws SQLException {
+	public KSOrganism[] takeArray() throws SQLException {
 		// Do all the allocation & initialization up front
 		// so that we minimize the time spent with the gene
 		// pool locked.
-		KSOrganism[] pair = new KSOrganism[2];
-		pair[0] = new KSOrganism(conf.genomeLength);
-		pair[1] = new KSOrganism(conf.genomeLength);
+		KSOrganism[] checkoutArray = new KSOrganism[conf.checkoutSize];
+		for (int i = 0; i < conf.checkoutSize; i++) {
+			checkoutArray[i] = new KSOrganism(conf.genomeLength);
+		}
 		Statement sth = dbh.createStatement();
-		String selectStatement = KSMySQLStrings.getSelectPairStatement(conf, GENE_POOL_TABLE);
-		String deleteStatement = KSMySQLStrings.getDeletePairStatement(conf, GENE_POOL_TABLE);
+		String selectStatement = KSMySQLStrings.getSelectArrayStatement(conf, GENE_POOL_TABLE);
+		String deleteStatement = KSMySQLStrings.getDeleteArrayStatement(conf, GENE_POOL_TABLE);
 		ResultSet rs = null;
 		int i = 0,j = 0;
 		
@@ -114,12 +115,14 @@ public class KSDistGADatasource {
 		lockTable(GENE_POOL_TABLE);
 		sth.execute(selectStatement);
 		rs = sth.getResultSet();
-		while(rs.next()) {
+		// This is a for loop which has been optimized to reduce the amount of time
+		// spent with the tables locked. This may be Knuthian evil.
+		while(rs.next()) { 
 			while( i < conf.genomeLength ) {
-				pair[j].genome[i] = rs.getDouble(i + 1); // (i + 1) -> gene_i
+				checkoutArray[j].genome[i] = rs.getDouble(i + 1); // (i + 1) -> gene_i
 				i++;
 			}
-			pair[j].fitnessScore = rs.getDouble(i + 1);
+			checkoutArray[j].fitnessScore = rs.getDouble(i + 1);
 			j++; i = 0;
 		}
 		sth.executeUpdate(deleteStatement);
@@ -127,7 +130,7 @@ public class KSDistGADatasource {
 		/*** TABLES AIN'T LOCKED ***/
 		
 		
-		return pair;
+		return checkoutArray;
 	}
 	
 	private void lockTable(String tableName) throws SQLException {
@@ -138,13 +141,13 @@ public class KSDistGADatasource {
 		lock_handle.executeUpdate(KSMySQLStrings.getUnlockTableStatement());
 	}
 	
-	public void putPair(KSOrganism[] pair) throws SQLException {
-		String insertStatements[] = new String[2];
-		for (int i = 0; i < 2; i++) {
-			insertStatements[i] = KSMySQLStrings.getInsertOrganismStatement(conf, GENE_POOL_TABLE, pair[i]);
+	public void putArray(KSOrganism[] organismArray) throws SQLException {
+		String insertStatements[] = new String[organismArray.length];
+		for (int i = 0; i < organismArray.length; i++) {
+			insertStatements[i] = KSMySQLStrings.getInsertOrganismStatement(conf, GENE_POOL_TABLE, organismArray[i]);
 		}
 		lockTable(GENE_POOL_TABLE);
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < organismArray.length; i++) {
 			work_handle.executeUpdate(insertStatements[i].toString());
 		}
 		unlockAllTables();

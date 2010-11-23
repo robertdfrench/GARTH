@@ -27,19 +27,19 @@ public class KSDistGABootloader {
 			System.exit(1);
 		}
 		// Prime the data source with random organisms
-		KSOrganism[] newPair = new KSOrganism[2];
+		KSOrganism[] checkoutArray = new KSOrganism[conf.checkoutSize];
 		System.out.println("Generating Initial Population");
-		for (int i = 0; i < conf.populationSize / 2; i++) {
-			for (int j = 0; j < 2; j++) {
-				newPair[j] = new KSOrganism(conf.genomeLength, true);
+		for (int i = 0; i < conf.populationSize / conf.checkoutSize; i++) {
+			//TODO Enforce requirement that conf.checkoutSize will always divide conf.populationSize
+			for (int j = 0; j < conf.checkoutSize; j++) {
+				checkoutArray[j] = new KSOrganism(conf.genomeLength, true);
 				// Evaluate before insert so that we can gather initial statistics
-				ff.evaluate(newPair[j]); 
+				ff.evaluate(checkoutArray[j]); 
 			}
 			try {
-				dbh.putPair(newPair);
+				dbh.putArray(checkoutArray);
 			} catch (SQLException e) {
-				System.err.println("MySQL connection died while building population.");
-				System.exit(1);
+				garth_bail(e, "MySQL connection died while building population.");
 			}
 		}
 		System.out.println("Database is loaded, start workers.");
@@ -49,10 +49,14 @@ public class KSDistGABootloader {
 				dbh.calculateAndLogStatistics();
 				Thread.sleep(conf.statisticsSamplerWaitPeriod);
 			} catch (SQLException e) {
-				System.err.println("MySQL connection died while doing statistical sampling.");
-				System.exit(1);
+				garth_bail(e,"MySQL connection died while doing statistical sampling.");
 			}
 		}
 	}
 
+	private static void garth_bail(Exception e, String message) {
+		System.out.println(message);
+		e.printStackTrace();
+		System.exit(1);
+	}
 }
