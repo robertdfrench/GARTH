@@ -14,7 +14,7 @@ import com.korovasoft.garth.KSOrganism;
  * Contains all the MySQL specific strings for the common datasource operations
  */
 public class KSMySQLStrings {
-	public static String getStatisticsUpdateStatement(KSDistGAConfig conf, String statsTable, String geneTable, String workerTable) {
+	public static String getStatisticsUpdateStatement(KSGarthConfig conf, String statsTable, String geneTable, String workerTable) {
 		StringBuilder sql = new StringBuilder();
 		
 		sql.append("INSERT INTO " + conf.databaseTablePrefix + statsTable);
@@ -41,7 +41,7 @@ public class KSMySQLStrings {
 	 * @param tableName
 	 * @return MySQL string to get latest statistics from stats table
 	 */
-	public static String getLatestStatisticsStatement(KSDistGAConfig conf, String tableName) {
+	public static String getLatestStatisticsStatement(KSGarthConfig conf, String tableName) {
 		return "SELECT * FROM " + conf.databaseTablePrefix + tableName + " ORDER BY sample_time DESC LIMIT 1";
 	}
 	
@@ -52,7 +52,7 @@ public class KSMySQLStrings {
 	 * @param organism
 	 * @return MySQL Organism insert string
 	 */
-	public static String getInsertOrganismStatement(KSDistGAConfig conf, String tableName, KSOrganism organism) {
+	public static String getInsertOrganismStatement(KSGarthConfig conf, String tableName, KSOrganism organism) {
 		StringBuilder insertSQL = new StringBuilder();
 		insertSQL.append("INSERT INTO " + conf.databaseTablePrefix + tableName + "(");
 		for (int i = 0; i < conf.genomeLength; i++) {
@@ -74,7 +74,7 @@ public class KSMySQLStrings {
 	 * @param tableName
 	 * @return MySQL string for selecting first two organisms from the gene_pool
 	 */
-	public static String getSelectArrayStatement(KSDistGAConfig conf, String tableName) {
+	public static String getSelectArrayStatement(KSGarthConfig conf, String tableName) {
 		return "SELECT * FROM " + conf.databaseTablePrefix + tableName + " ORDER BY id ASC LIMIT " + conf.checkoutSize;
 	}
 	
@@ -86,7 +86,7 @@ public class KSMySQLStrings {
 	 * @param tableName
 	 * @return MySQL string for deleting first two organisms in the gene_pool
 	 */
-	public static String getDeleteArrayStatement(KSDistGAConfig conf, String tableName) {
+	public static String getDeleteArrayStatement(KSGarthConfig conf, String tableName) {
 		return "DELETE FROM " + conf.databaseTablePrefix + tableName + " ORDER BY id ASC LIMIT " + conf.checkoutSize;
 	}
 	
@@ -96,7 +96,7 @@ public class KSMySQLStrings {
 	 * @param conf
 	 * @return
 	 */
-	public static String getGenePoolCreateStatement(KSDistGAConfig conf, String tableName) {
+	public static String getGenePoolCreateStatement(KSGarthConfig conf, String tableName) {
 		StringBuilder sql = new StringBuilder();
 		sql.append("CREATE TABLE " + conf.databaseTablePrefix + tableName + "(");
 		for (int i = 0; i < conf.genomeLength; i++) {
@@ -114,7 +114,7 @@ public class KSMySQLStrings {
 	 * @param conf
 	 * @return
 	 */
-	public static String getStatisticsCreateStatement(KSDistGAConfig conf, String tableName) {
+	public static String getStatisticsCreateStatement(KSGarthConfig conf, String tableName) {
 		StringBuilder sql = new StringBuilder();
 		sql.append("CREATE TABLE " + conf.databaseTablePrefix + tableName + "(");
 		sql.append("sample_time DATETIME NOT NULL,");
@@ -130,7 +130,7 @@ public class KSMySQLStrings {
 	 * @param conf
 	 * @return
 	 */
-	public static String getWorkerStatusCreateStatement(KSDistGAConfig conf, String tableName) {
+	public static String getWorkerStatusCreateStatement(KSGarthConfig conf, String tableName) {
 		StringBuilder sql = new StringBuilder();
 		sql.append("CREATE TABLE " + conf.databaseTablePrefix + tableName + "(");
 		sql.append("start_time DATETIME NOT NULL,");
@@ -144,7 +144,7 @@ public class KSMySQLStrings {
 	 * @param tableName
 	 * @return
 	 */
-	public static String getDropTableStatement(KSDistGAConfig conf, String tableName) {
+	public static String getDropTableStatement(KSGarthConfig conf, String tableName) {
 		return "DROP TABLE IF EXISTS " + conf.databaseTablePrefix + tableName;
 	}
 	
@@ -154,7 +154,7 @@ public class KSMySQLStrings {
 	 * @param tableName
 	 * @return MySQL statement to lock tableName
 	 */
-	public static String getLockTableStatement(KSDistGAConfig conf, String tableName) {
+	public static String getLockTableStatement(KSGarthConfig conf, String tableName) {
 		return "LOCK TABLES " + conf.databaseTablePrefix + tableName + " WRITE";
 	}
 	
@@ -172,7 +172,7 @@ public class KSMySQLStrings {
 	 * @param conf
 	 * @return
 	 */
-	public static String getConnectionString(KSDistGAConfig conf) {
+	public static String getConnectionString(KSGarthConfig conf) {
 		// Ex: jdbc:mysql://localhost:3306/distributed_ga
 		return String.format("jdbc:mysql://%s:%d/%s",conf.databaseHost,conf.databasePort,conf.databaseName);
 	}

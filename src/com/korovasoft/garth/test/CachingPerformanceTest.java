@@ -11,9 +11,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.korovasoft.garth.KSCacheableFunction;
 import com.korovasoft.garth.KSFunction;
 import com.korovasoft.garth.KSOrganism;
-import com.korovasoft.garth.examples.CacheingDistanceFunction;
+import com.korovasoft.garth.examples.AdditiveFunction;
 import com.korovasoft.garth.examples.DistanceFunction;
 
 public class CachingPerformanceTest {
@@ -53,9 +54,18 @@ public class CachingPerformanceTest {
 	}
 	
 	@Test
-	public void performanceTestForDistance() {
-		KSFunction caching = new CacheingDistanceFunction(genomeLength);
-		KSFunction normal  = new DistanceFunction();
+	public void testAdditiveFunction() {
+		performanceTest(new AdditiveFunction());
+	}
+	
+	@Test
+	public void testDistanceFunction() {
+		performanceTest(new DistanceFunction());
+	}
+	
+	public void performanceTest(KSFunction f) {
+		KSFunction caching = new KSCacheableFunction(genomeLength, f);
+		KSFunction normal  = f;
 		
 		long cachingTime = getTimingForFunction(caching);
 		long normalTime = getTimingForFunction(normal);
