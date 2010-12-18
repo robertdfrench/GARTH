@@ -3,11 +3,11 @@
  */
 package com.korovasoft.garth.test;
 
-import static org.junit.Assert.*;
-
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+
+import junit.framework.TestCase;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -22,7 +22,7 @@ import com.korovasoft.garth.KSOrganism;
  * @author robertdfrench
  *
  */
-public class TestForgetfulHash {
+public class TestForgetfulHash extends TestCase {
 
 	static final int populationSize = 20000;
 	static final int genomeLength = 100;

@@ -13,6 +13,7 @@ package com.korovasoft.garth;
  */
 public class KSForgetfulHash {
 	
+	public static final double UNDEFINED = Double.POSITIVE_INFINITY;
 	/**
 	 * A single element in the ForgetfulHash
 	 * All concurrency protection is handled at the element level
@@ -21,6 +22,12 @@ public class KSForgetfulHash {
 	 */
 	private class KSForgetfulHashElement {
 		
+		/**
+		 * No value has yet been written. Purposefully different from
+		 * KSForgetfulHash.CACHE_MISS to support the bad ass non-blockingness
+		 */
+		private static final double EMPTY = Double.NEGATIVE_INFINITY;
+
 		/**
 		 * The actual value to be retrieved
 		 */
@@ -43,12 +50,12 @@ public class KSForgetfulHash {
 		 */
 		public KSForgetfulHashElement(int keyLength) {
 			versionID = 1;
-			cachedValue = Double.NEGATIVE_INFINITY;
+			cachedValue = EMPTY;
 			key = new double[keyLength];
 		}
 		
 		/**
-		 * Returns Double.Nan if the element is currently being overwritten,
+		 * Returns KSForgetfulHash.UNDEFINED if the element is currently being overwritten,
 		 * Otherwise returns the stored value.
 		 * Also fails if versionID changes while the read is taken place
 		 * (in case the write and read interleave).
@@ -57,14 +64,14 @@ public class KSForgetfulHash {
 		 * @return
 		 */
 		public double read(double key[]) {
-			if (this.accessIsDangerous()) return Double.NaN;
+			if (this.accessIsDangerous()) return KSForgetfulHash.UNDEFINED;
 			int versionID = this.versionID;
 			int readUntil = (key.length < this.key.length) ? key.length : this.key.length;
 			boolean keysMatch = true;
 			for (int i = 0; i < readUntil && keysMatch; i++) {
 				keysMatch = (key[i] == this.key[i]);
 			}
-			return (keysMatch && versionID == this.versionID) ? this.cachedValue : Double.NaN;
+			return (keysMatch && versionID == this.versionID) ? this.cachedValue : KSForgetfulHash.UNDEFINED;
 		}
 		
 		/**
@@ -99,7 +106,7 @@ public class KSForgetfulHash {
 		private int disableAccess() {
 			int versionID = this.versionID;
 			this.versionID = 0;
-			this.cachedValue = Double.NaN;
+			this.cachedValue = KSForgetfulHash.UNDEFINED;
 			return versionID;
 		}
 		
@@ -108,7 +115,7 @@ public class KSForgetfulHash {
 		 * @return
 		 */
 		private boolean accessIsDangerous() {
-			return (this.cachedValue == Double.NaN || this.versionID == 0);
+			return (this.cachedValue == KSForgetfulHash.UNDEFINED || this.versionID == 0);
 		}
 	}
 	
@@ -163,4 +170,5 @@ public class KSForgetfulHash {
 	private int keyToTableAddress(double[] key) {
 		return key.hashCode() % hashTable.length;
 	}
+	
 }

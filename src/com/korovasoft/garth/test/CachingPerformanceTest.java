@@ -1,9 +1,9 @@
 package com.korovasoft.garth.test;
 
 
-import static org.junit.Assert.assertTrue;
-
 import java.util.Random;
+
+import junit.framework.TestCase;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -17,7 +17,7 @@ import com.korovasoft.garth.KSOrganism;
 import com.korovasoft.garth.examples.AdditiveFunction;
 import com.korovasoft.garth.examples.DistanceFunction;
 
-public class CachingPerformanceTest {
+public class CachingPerformanceTest extends TestCase {
 	static final int populationSize = 20000;
 	static final int genomeLength = 1000;
 	static final int tableSize = 2500;

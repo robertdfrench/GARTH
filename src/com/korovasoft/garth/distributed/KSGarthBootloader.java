@@ -6,9 +6,11 @@
 package com.korovasoft.garth.distributed;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 
 import com.korovasoft.garth.KSFitnessFunction;
+import com.korovasoft.garth.KSFitnessFunctionWrapper;
 import com.korovasoft.garth.KSOrganism;
 
 public class KSGarthBootloader {
@@ -21,8 +23,31 @@ public class KSGarthBootloader {
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws InterruptedException, IOException {
-		KSGarthConfig conf = new KSGarthConfig();
-		KSFitnessFunction ff = conf.fitnessFunction;
+		KSGarthConfig conf = new KSGarthConfig(System.getProperty("configFile"));
+		KSFitnessFunction ff = null;
+		try {
+			ff = KSFitnessFunctionWrapper.getFitnessFunction(conf.fitnessFunction);
+		} catch (ClassNotFoundException e) {
+			garth_bail(e, "Your fitness function class was not found. Either you gave the wrong path, or your filesystem is fucking with you.");
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		KSGarthDatasource dbh = null;
 		
 		System.out.println("Creating Tables from Experiment definition");
@@ -30,8 +55,7 @@ public class KSGarthBootloader {
 			dbh = new KSGarthDatasource(conf);
 			dbh.setupTables();
 		} catch (SQLException e) {
-			System.err.println("MySQL appears to be inaccessible");
-			System.exit(1);
+			garth_bail(e,"MySQL appears to be inaccessible");
 		}
 		// Prime the data source with random organisms
 		KSOrganism[] checkoutArray = new KSOrganism[conf.checkoutSize];
@@ -61,9 +85,12 @@ public class KSGarthBootloader {
 		}
 	}
 
-	private static void garth_bail(Exception e, String message) {
+
+
+	protected static void garth_bail(Exception e, String message) {
 		System.out.println(message);
 		e.printStackTrace();
 		System.exit(1);
 	}
+	
 }

@@ -5,9 +5,11 @@
 **/
 package com.korovasoft.garth.distributed;
 
-import com.korovasoft.garth.KSFitnessFunction;
-import com.korovasoft.garth.KSFitnessFunctionWrapper;
-import com.korovasoft.garth.examples.AdditiveFunction;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.HashMap;
+
 
 public class KSGarthConfig {
 	/**
@@ -78,14 +80,14 @@ public class KSGarthConfig {
 	/**
 	 * Fitness function to be used in calculations
 	 */
-	public KSFitnessFunction fitnessFunction;
+	public String fitnessFunction;
 	
 	/**
 	 * Number of organisms that will be checked out from the
 	 * repository at a time. Should properly divide populationSize
 	 */
 	public int checkoutSize;
-
+	
 	/**
 	 * create a new KSDistGAConfig with the hard-coded values
 	 */
@@ -103,9 +105,42 @@ public class KSGarthConfig {
 		numWorkers = 6;
 		numInsertsBeforeCallingGC = 10000;
 		statisticsSamplerWaitPeriod = 2000;
-		fitnessFunction = new KSFitnessFunctionWrapper(new AdditiveFunction());
+		fitnessFunction = "com.korovasoft.garth.examples.InverseAmplitudeRipples";
 		assert(populationSize % checkoutSize == 0);
 		assert(checkoutSize % 2 == 0);
 	}
 
+	/**
+	 * Reads in config options from filename
+	 * @param filename
+	 */
+	public KSGarthConfig(String filename) {
+		HashMap<String,String> internalDictionary = new HashMap<String,String>();
+		try {
+			BufferedReader in = new BufferedReader(new FileReader(filename));
+			String str;
+			while ((str = in.readLine()) != null) {
+				String[] pair = str.split(" = ", 2);
+				internalDictionary.put(pair[0], pair[1]);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("Couldn't read config file, bailing");
+		}
+		databaseName = internalDictionary.get("databaseName");
+		databaseUser = internalDictionary.get("databaseUser");
+		databasePassword = internalDictionary.get("databasePassword");
+		databaseHost = internalDictionary.get("databaseHost");
+		databasePort = (new Integer(internalDictionary.get("databasePort"))).intValue();
+		databaseTablePrefix = internalDictionary.get("databaseTablePrefix");
+		populationSize = (new Integer(internalDictionary.get("populationSize"))).intValue();
+		genomeLength = (new Integer(internalDictionary.get("genomeLength"))).intValue();
+		checkoutSize = (new Integer(internalDictionary.get("checkoutSize"))).intValue();
+		numWorkers = (new Integer(internalDictionary.get("numWorkers"))).intValue();
+		numInsertsBeforeCallingGC = (new Integer(internalDictionary.get("numInsertsBeforeGC"))).intValue();
+		statisticsSamplerWaitPeriod = (new Integer(internalDictionary.get("statisticsSamplerWaitPeriod"))).intValue();
+		fitnessFunction = internalDictionary.get("fitnessFunction");
+		assert(populationSize % checkoutSize == 0);
+		assert(checkoutSize % 2 == 0);
+	}
 }

@@ -30,8 +30,7 @@ public class KSCacheableFunction implements KSFunction {
 	
 	public double execute(double[] argument) {
 		double returnValue = cache.get(argument);
-		
-		if (returnValue == Double.NaN) {
+		if (returnValue == KSForgetfulHash.UNDEFINED) {
 			returnValue = internalFunction.execute(argument);
 			cache.put(argument, returnValue);
 		}

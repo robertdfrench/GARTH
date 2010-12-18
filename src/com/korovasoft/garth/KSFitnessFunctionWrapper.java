@@ -1,11 +1,13 @@
 package com.korovasoft.garth;
 
+import java.lang.reflect.InvocationTargetException;
+
 public class KSFitnessFunctionWrapper implements KSFitnessFunction {
 	
 	private KSFunction internalFunction;
 	
-	public KSFitnessFunctionWrapper(KSFunction internalFunction) {
-		this.internalFunction = internalFunction;
+	public KSFitnessFunctionWrapper(KSFunction ksFunction) {
+		this.internalFunction = ksFunction;
 	}
 	/**
 	 * Detects if the organism has already been evaluated,
@@ -32,5 +34,24 @@ public class KSFitnessFunctionWrapper implements KSFitnessFunction {
 	 */
 	protected double calculateFitness(KSOrganism organism) {
 		return internalFunction.execute(organism.genome);
+	}
+	
+	/**
+	 * @param className
+	 * @return
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
+	 * @throws InvocationTargetException
+	 * @throws NoSuchMethodException
+	 * @throws SecurityException
+	 * @throws ClassNotFoundException
+	 */
+	public static KSFitnessFunctionWrapper getFitnessFunction(
+			String className) throws InstantiationException,
+			IllegalAccessException, IllegalArgumentException,
+			InvocationTargetException, NoSuchMethodException,
+			SecurityException, ClassNotFoundException {
+		return new KSFitnessFunctionWrapper((KSFunction) Class.forName(className).getConstructor().newInstance());
 	}
 }
